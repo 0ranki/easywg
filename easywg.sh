@@ -59,9 +59,11 @@ fi
 [ "$SUBNET4" -lt 24 ] && usage
 
 ## Generate allowed IPs
-## TODO: Conf file variable for additional IPs to include in tunnel
 if [[ "$1" == "split" ]]; then
 	ALLOWED_IPS=${PREFIX4}.${SUBNET_FIRST}/${SUBNET4},${PREFIX6}:0/${SUBNET6}
+    if [[ ! -z "$ADDN_ALLOWED_IPS" ]]; then
+        ALLOWED_IPS=${ALLOWED_IPS},${ADDN_ALLOWED_IPS}
+    fi
 elif [[ "$1" == "full" ]]; then
 	ALLOWED_IPS=0.0.0.0/0,::/0
 else
