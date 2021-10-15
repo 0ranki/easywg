@@ -1,7 +1,11 @@
 #!/bin/bash
 
-## TODO: add check for requirements (bc, wg, curl, qrencode)
 ## TODO: flags instead of config file
+
+if [[ "$UID" -ne 0 ]]; then
+    echo "This script needs root permissions to run."
+    exit 1
+fi
 
 MISSED_REQS=()
 for command in bc wg curl qrencode; do
