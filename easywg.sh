@@ -3,6 +3,19 @@
 ## TODO: add check for requirements (bc, wg, curl, qrencode)
 ## TODO: flags instead of config file
 
+MISSED_REQS=()
+for command in bc wg curl qrencode; do
+    if ! command -v $command > /dev/null; then
+        MISSED_REQS+=("$command")
+    fi
+done
+if [[ ${#MISSED_REQS[@]} -ne 0 ]]; then
+    echo "This script requires you to install the"
+    echo "following dependencies:"
+    echo "${MISSED_REQS[@]}"
+    exit 1
+fi
+
 ## Read user overrides
 [ -f "./easywg.config" ] && . ./easywg.config
 
