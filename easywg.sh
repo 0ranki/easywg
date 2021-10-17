@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ## TODO: flags instead of config file
+## TODO: deleting clients
 
 if [[ "$UID" -ne 0 ]]; then
     echo "This script needs root permissions to run."
@@ -54,6 +55,7 @@ SERVER_N=${SERVER_ADDR4##*.} #Last part of IPv4 address
 N_ADDRESSES=$(echo "2^(32-$SUBNET4)" | bc) #Number of addresses in subnet (IPv4)
 [ ! -z $DNS ] && DNSSTR="\nDNS = ${DNS}" #Get DNS from user conf
 [ ! -z $MTU ] && MTUSTR="\nMTU = ${MTU}" #Get MTU from user conf
+[ ! -z $KEEPALIVE ] && KEEPALIVESTR="\nPersistentKeepAlive = ${KEEPALIVE}" #Get PersistentKeepAlive from user conf
 
 ## Calculate the first address in the subnet, not necessarily the server address
 SUBNET_FIRST=0
@@ -154,7 +156,7 @@ Address = ${PREFIX6}:${N_CLIENT6}/${SUBNET6}${MTUSTR}${DNSSTR}
 [Peer]
 PublicKey = ${SERVER_KEY}
 Endpoint = ${SERVER_IP}:${PORT}
-AllowedIPs = ${ALLOWED_IPS}
+AllowedIPs = ${ALLOWED_IPS}${KEEPALIVESTR}
 " > ${CLIENT_CONF_DIR}/client_${N_CLIENT4}.conf
 
 ## Show a QR code to scan for mobile devices
@@ -173,4 +175,14 @@ if [[ "$REPLY" == "y" ]]; then
 	ip -4 r add ${PREFIX4}.${N_CLIENT4} dev ${INTERFACE} scope link
 fi
 unset $REPLY
+
+printf "For security reasons it is best not to store the client configs with private keys.\n"
+printf "If you answer anything other than 'yes', the file will be deleted."
+read -p "Keep configuration file (answer 'yes' to keep)? "
+printf "\n"
+if [[ "$REPLY" != "yes" ]]; then
+    rm -f ${CLIENT_CONF_DIR}/client_${N_CLIENT4}.conf
+fi
+unset $REPLY
+
 printf "\n"
