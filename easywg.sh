@@ -140,7 +140,8 @@ if [ "$DEBUG" -eq 1 ]; then
     echo DNSSTR: $DNSSTR
     echo MTUSTR: $MTUSTR
     echo ALLOWED_IPS: $ALLOWED_IPS
-    read
+    echo KEEPALIVESTR: $KEEPALIVESTR
+    read -p 'q to quit'
     [ "$REPLY" == "q" ] && exit 1
 fi
 unset $REPLY
