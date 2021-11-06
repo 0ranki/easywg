@@ -41,7 +41,7 @@ INTERFACE=$2
 [ -z "$SERVER_IP" ] && SERVER_IP=$(curl -4 -s http://ifconfig.co)
 [ -z "$PORT" ] && PORT=$(wg show $INTERFACE | grep 'listening port:' | sed 's/^.*: //')
 IP4="$(ip -4 a show $INTERFACE | grep inet | sed 's/^ *//' | awk '{print $2}')" #IPv4 CIDR for server
-IP6="$(ip -6 a show $INTERFACE | grep inet | sed 's/^ *//' | awk '{print $2}')" #IPv6 CIDR for server
+IP6="$(ip -6 a show $INTERFACE | grep inet | sed 's/^ *//' | awk '{print $2}' | head -1)" #IPv6 CIDR for server
 SERVER_ADDR4=${IP4%/*}  #remove CIDR subnet size, 10.0.0.0
 SERVER_ADDR6=${IP6%/*}
 PREFIX4=${IP4%.*}       #prefix, 10.0.0
@@ -94,9 +94,14 @@ shopt -s nullglob
 ## Get a random available address
 if [ -z "$CLIENT_IP4" ]; then
     while [[ ! "$DONE" ]]; do
-        N_CLIENT4=$(( $SERVER_N + RANDOM % (( $MAX_CLIENT_N - $SERVER_N )) ))
-        wg show $INTERFACE | grep "${IP4}.${N_CLIENT4}" > /dev/null
-        [[ "$?" == 1 ]] && [[ "$N_CLIENT4" -ne "$SUBNET_FIRST" ]] && [[ "$N_CLIENT4" -ne "$SUBNET_LAST" ]] && [[ "$N_CLIENT4" -ne "$SERVER_N" ]]  && DONE=true
+        N_CLIENT4=$(( $SERVER_N + $RANDOM % (( $MAX_CLIENT_N - $SERVER_N )) ))
+        # Check that a peer with the same address does not exist
+        if ! wg show $INTERFACE | grep -q "${PREFIX4}.${N_CLIENT4}"; then
+            # The address can't be the first or the last in the subnet,
+            # or the server's WG address
+            [[ "$N_CLIENT4" -ne "$SUBNET_FIRST" ]] && [[ "$N_CLIENT4" -ne "$SUBNET_LAST" ]] \
+                && [[ "$N_CLIENT4" -ne "$SERVER_N" ]]  && DONE=true
+        fi
     done
 else ## Or read client addresses from conf file
     N_CLIENT4=${CLIENT_IP4##*.}
