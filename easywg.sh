@@ -22,7 +22,8 @@ if [[ ${#MISSED_REQS[@]} -ne 0 ]]; then
 fi
 
 ## Read user overrides
-[ -f "./easywg.config" ] && . ./easywg.config
+[ -f "/etc/easywg.conf" ] && . /etc/easywg.conf
+[ -f "./easywg.conf" ] && . ./easywg.conf
 
 umask 077
 
@@ -122,7 +123,7 @@ else
 fi
 
 ## If run with DEBUG=1 ./easywg.sh, print debug output
-if [ "$DEBUG" -eq 1 ]; then
+if [ ! -z "$DEBUG" ]; then
     echo server ip: $SERVER_IP
     echo port: $PORT
     echo IP4: $IP4
