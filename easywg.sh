@@ -92,8 +92,21 @@ fi
 
 shopt -s nullglob
 
+## If using sequential IP addresses, get the next free IP address
+if [[ "$SEQUENTIAL_IPS" == "true" ]]; then
+    for (( ip = $SUBNET_FIRST + 1 ; ip < $SUBNET_LAST ; ip++ )); do
+        echo $PREFIX4.$ip
+        if [[ "$ip" -ne "$SERVER_N" ]]; then
+            if ! wg show $INTERFACE | grep -q "${PREFIX4}.${ip}"; then
+                N_CLIENT4=$ip
+                break
+            fi
+        fi
+    done
+    echo $PREFIX4.$ip
+    exit
 ## Get a random available address
-if [ -z "$CLIENT_IP4" ]; then
+elif [ -z "$CLIENT_IP4" ]; then
     while [[ ! "$DONE" ]]; do
         N_CLIENT4=$(( $SERVER_N + $RANDOM % (( $MAX_CLIENT_N - $SERVER_N )) ))
         # Check that a peer with the same address does not exist
