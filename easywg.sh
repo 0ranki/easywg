@@ -95,7 +95,6 @@ shopt -s nullglob
 ## If using sequential IP addresses, get the next free IP address
 if [[ "$SEQUENTIAL_IPS" == "true" ]]; then
     for (( ip = $SUBNET_FIRST + 1 ; ip < $SUBNET_LAST ; ip++ )); do
-        echo $PREFIX4.$ip
         if [[ "$ip" -ne "$SERVER_N" ]]; then
             if ! wg show $INTERFACE | grep -q "${PREFIX4}.${ip}"; then
                 N_CLIENT4=$ip
@@ -103,8 +102,6 @@ if [[ "$SEQUENTIAL_IPS" == "true" ]]; then
             fi
         fi
     done
-    echo $PREFIX4.$ip
-    exit
 ## Get a random available address
 elif [ -z "$CLIENT_IP4" ]; then
     while [[ ! "$DONE" ]]; do
